@@ -426,10 +426,6 @@ function updateCopyCount() {
 }
 
 function copySelectedItems(event) {
-  // The close and cancel controls submit this method="dialog" form too.
-  // Let the browser handle those submissions so the dialog closes normally.
-  if (event.submitter?.value === "cancel") return;
-
   event.preventDefault();
   const selected = [...els.copyList.querySelectorAll("input:checked")];
   if (!selected.length) {
@@ -508,6 +504,9 @@ document.querySelector("#add-category").addEventListener("click", addCategory);
 document.querySelector("#empty-add-category").addEventListener("click", addCategory);
 document.querySelector("#copy-items").addEventListener("click", openCopyDialog);
 document.querySelector("#copy-form").addEventListener("submit", copySelectedItems);
+document.querySelectorAll("[data-close-copy]").forEach((button) => {
+  button.addEventListener("click", () => els.copyDialog.close());
+});
 els.copySource.addEventListener("change", renderCopyOptions);
 document.querySelector("#toggle-copy-all").addEventListener("click", () => {
   const boxes = [...els.copyList.querySelectorAll("input")];
