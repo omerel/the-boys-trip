@@ -53,8 +53,8 @@ button { cursor: pointer; }
   padding: 28px max(24px, calc((100vw - 1120px) / 2)) 38px;
   color: white;
   background:
-    linear-gradient(110deg, rgba(11, 45, 38, 0.97), rgba(31, 88, 73, 0.9)),
-    linear-gradient(30deg, #173f37, #4f8674);
+    linear-gradient(110deg, rgba(8, 31, 26, 0.88), rgba(20, 67, 56, 0.68)),
+    url("julian-alps-hero.jpeg") center 43% / cover no-repeat;
 }
 
 .hero::after {
