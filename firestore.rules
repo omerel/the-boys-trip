@@ -1,0 +1,12 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Access requires a Google-authenticated Firebase user. The trip ID is
+    // intentionally long; do not reuse these rules for sensitive information.
+    match /trips/juliana-2026-7f4c2d91a8e64b30 {
+      allow read, write: if request.auth != null
+        && request.auth.token.firebase.sign_in_provider == "google.com";
+    }
+  }
+}

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#173f37" />
+    <meta
+      name="description"
+      content="רשימת ציוד משותפת לטיול Juliana Trail בסלובניה"
+    />
+    <title>הטיול של הבנים | רשימת ציוד</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section class="auth-screen" id="auth-screen" aria-labelledby="auth-title">
+      <div class="auth-card">
+        <div class="auth-mark">▲</div>
+        <span class="eyebrow eyebrow--dark">JULIANA TRAIL · SLOVENIA</span>
+        <h1 id="auth-title">הטיול של הבנים</h1>
+        <p>רשימת הציוד המשותפת של עומר, עמרי ומתן</p>
+        <button class="google-button" id="google-sign-in" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.4Z"/><path fill="#34A853" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1a5.8 5.8 0 0 1-5.5-4H3.2v2.6A10 10 0 0 0 12 22Z"/><path fill="#FBBC05" d="M6.5 14.1a6 6 0 0 1 0-4.2V7.3H3.2a10 10 0 0 0 0 9.4l3.3-2.6Z"/><path fill="#EA4335" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 3.2 7.3l3.3 2.6A5.8 5.8 0 0 1 12 5.9Z"/></svg>
+          כניסה באמצעות Google
+        </button>
+        <small>הכניסה מאפשרת לסנכרן את הרשימות בין שלושת הטלפונים.</small>
+        <p class="auth-error" id="auth-error" role="alert" hidden></p>
+      </div>
+    </section>
+    <div class="shell">
+      <header class="hero">
+        <div class="hero__topline">
+          <span class="eyebrow">JULIANA TRAIL · SLOVENIA</span>
+          <div class="hero__tools">
+            <span class="sync-pill" id="sync-pill" aria-live="polite"><span class="status-dot"></span><span id="sync-pill-text">מתחבר…</span></span>
+            <button class="icon-button" id="open-menu" aria-label="פתח תפריט" title="תפריט">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" /></svg>
+            </button>
+          </div>
+        </div>
+        <h1>הטיול של הבנים</h1>
+        <p>7–13 באוקטובר 2026 · 85.8 ק״מ באלפים היוליאניים</p>
+        <div class="overall-progress" aria-label="התקדמות כללית">
+          <div class="overall-progress__copy">
+            <span>מוכנים לדרך</span>
+            <strong id="overall-count">0 מתוך 0</strong>
+          </div>
+          <div class="progress-track"><span id="overall-bar"></span></div>
+        </div>
+      </header>
+
+      <main>
+        <nav class="people-tabs" id="people-tabs" aria-label="בחירת רשימה"></nav>
+
+        <section class="list-heading">
+          <div>
+            <span class="list-heading__label" id="active-list-label">הרשימה של</span>
+            <h2 id="active-list-name">עומר</h2>
+          </div>
+          <div class="list-heading__actions">
+            <button class="button button--secondary" id="copy-items">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v11H8zM5 16H4V4h12v1" /></svg>
+              העתקה
+            </button>
+            <button class="button button--primary" id="add-category">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              קטגוריה
+            </button>
+          </div>
+        </section>
+
+        <div class="category-grid" id="category-grid"></div>
+
+        <section class="empty-state" id="empty-state" hidden>
+          <div class="empty-state__icon">✓</div>
+          <h3>עוד אין כאן קטגוריות</h3>
+          <p>הוסיפו קטגוריה ראשונה והתחילו לארוז.</p>
+          <button class="button button--primary" id="empty-add-category">הוספת קטגוריה</button>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <dialog id="copy-dialog" class="dialog">
+      <form method="dialog" class="dialog__panel" id="copy-form">
+        <div class="dialog__header">
+          <div>
+            <span class="eyebrow eyebrow--dark">לא שוכחים כלום</span>
+            <h3>העתקת פריטים</h3>
+          </div>
+          <button class="icon-button icon-button--dark" value="cancel" aria-label="סגירה">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <label class="field-label" for="copy-source">העתקה מתוך הרשימה של</label>
+        <select id="copy-source" class="select"></select>
+        <div class="copy-toolbar">
+          <span id="copy-selection-count">0 פריטים נבחרו</span>
+          <button type="button" class="text-button" id="toggle-copy-all">בחירת הכול</button>
+        </div>
+        <div class="copy-list" id="copy-list"></div>
+        <div class="dialog__footer">
+          <button class="button button--ghost" value="cancel">ביטול</button>
+          <button class="button button--primary" type="submit" value="confirm">העתקה לרשימה</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="menu-dialog" class="dialog dialog--menu">
+      <form method="dialog" class="dialog__panel">
+        <div class="dialog__header">
+          <h3>אפשרויות</h3>
+          <button class="icon-button icon-button--dark" value="cancel" aria-label="סגירה">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+        <button type="button" class="menu-row" id="export-data">
+          <span>הורדת גיבוי</span><small>קובץ JSON עם כל הרשימות</small>
+        </button>
+        <label class="menu-row" for="import-data">
+          <span>טעינת גיבוי</span><small>שחזור נתונים מקובץ קודם</small>
+        </label>
+        <input type="file" id="import-data" accept="application/json" hidden />
+        <button type="button" class="menu-row menu-row--danger" id="reset-data">
+          <span>איפוס הרשימות</span><small>חזרה לרשימת הציוד המקורית</small>
+        </button>
+        <div class="account-row" id="account-row" hidden>
+          <img id="account-photo" alt="" referrerpolicy="no-referrer" />
+          <div><strong id="account-name"></strong><small id="account-email"></small></div>
+          <button type="button" class="text-button" id="sign-out">התנתקות</button>
+        </div>
+        <div class="storage-note" id="storage-note">
+          <span class="status-dot"></span>
+          <div><strong id="storage-title">מתחבר לענן…</strong><small id="storage-detail">השינויים נשמרים גם במכשיר זה.</small></div>
+        </div>
+      </form>
+    </dialog>
+
+    <template id="category-template">
+      <article class="category-card">
+        <header class="category-card__header">
+          <div>
+            <div class="category-title-row">
+              <span class="category-icon"></span>
+              <h3 class="category-name"></h3>
+            </div>
+            <span class="category-progress"></span>
+          </div>
+          <button class="icon-button icon-button--muted delete-category" aria-label="מחיקת קטגוריה">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M8 10v8M12 10v8M16 10v8M6 7l1 14h10l1-14" /></svg>
+          </button>
+        </header>
+        <div class="items"></div>
+        <form class="add-item-form">
+          <input class="add-item-input" type="text" maxlength="80" placeholder="הוספת פריט..." aria-label="שם הפריט החדש" />
+          <button class="add-item-button" type="submit" aria-label="הוסף פריט">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+          </button>
+        </form>
+      </article>
+    </template>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
