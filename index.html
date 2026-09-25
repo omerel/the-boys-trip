@@ -55,32 +55,47 @@
       </header>
 
       <main>
-        <nav class="people-tabs" id="people-tabs" aria-label="בחירת רשימה"></nav>
+        <section id="checklist-view">
+          <nav class="people-tabs" id="people-tabs" aria-label="בחירת רשימה"></nav>
 
-        <section class="list-heading">
-          <div>
-            <span class="list-heading__label" id="active-list-label">הרשימה של</span>
-            <h2 id="active-list-name">עומר</h2>
-          </div>
-          <div class="list-heading__actions">
-            <button class="button button--secondary" id="copy-items">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v11H8zM5 16H4V4h12v1" /></svg>
-              העתקה
-            </button>
-            <button class="button button--primary" id="add-category">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
-              קטגוריה
-            </button>
-          </div>
+          <section class="list-heading">
+            <div>
+              <span class="list-heading__label" id="active-list-label">הרשימה של</span>
+              <h2 id="active-list-name">עומר</h2>
+            </div>
+            <div class="list-heading__actions">
+              <button class="button button--secondary" id="copy-items">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 8h11v11H8zM5 16H4V4h12v1" /></svg>
+                העתקה
+              </button>
+              <button class="button button--primary" id="add-category">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+                קטגוריה
+              </button>
+            </div>
+          </section>
+
+          <div class="category-grid" id="category-grid"></div>
+
+          <section class="empty-state" id="empty-state" hidden>
+            <div class="empty-state__icon">✓</div>
+            <h3>עוד אין כאן קטגוריות</h3>
+            <p>הוסיפו קטגוריה ראשונה והתחילו לארוז.</p>
+            <button class="button button--primary" id="empty-add-category">הוספת קטגוריה</button>
+          </section>
         </section>
 
-        <div class="category-grid" id="category-grid"></div>
-
-        <section class="empty-state" id="empty-state" hidden>
-          <div class="empty-state__icon">✓</div>
-          <h3>עוד אין כאן קטגוריות</h3>
-          <p>הוסיפו קטגוריה ראשונה והתחילו לארוז.</p>
-          <button class="button button--primary" id="empty-add-category">הוספת קטגוריה</button>
+        <section class="schedule-view" id="schedule-view" hidden>
+          <div class="schedule-heading">
+            <div>
+              <span class="list-heading__label">7–13 באוקטובר 2026</span>
+              <h2>הלו״ז היומי</h2>
+              <p>חמשת מקטעי ההליכה, ההסעות, הלינה וכל מה שצריך לזכור.</p>
+            </div>
+            <button class="button button--secondary" id="back-to-checklist">חזרה לציוד</button>
+          </div>
+          <aside class="trip-contacts" id="trip-contacts"></aside>
+          <div class="schedule-grid" id="schedule-grid"></div>
         </section>
       </main>
     </div>
@@ -120,6 +135,9 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
           </button>
         </div>
+        <button type="button" class="menu-row menu-row--featured" id="open-schedule">
+          <span>לו״ז יומי</span><small>מסלולים, הסעות, לינה, אנשי קשר והערות</small>
+        </button>
         <button type="button" class="menu-row" id="export-data">
           <span>הורדת גיבוי</span><small>קובץ JSON עם כל הרשימות</small>
         </button>

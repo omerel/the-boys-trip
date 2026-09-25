@@ -12,6 +12,7 @@ const PEOPLE = [
   { id: "shared", name: "ציוד משותף", shared: true },
 ];
 
+
 const CATEGORY_COLORS = ["#2d705e", "#d19145", "#4779a7", "#9a5d7b", "#778b4a", "#7965a8"];
 
 const personalCategories = () => [
@@ -35,6 +36,8 @@ function category(name, itemNames, shared = false) {
 function createInitialState() {
   return {
     activeList: "omer",
+    itinerary: null,
+    itineraryNotes: {},
     lists: {
       omer: personalCategories(),
       omri: personalCategories(),
@@ -55,7 +58,11 @@ function uid() {
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (saved?.lists && PEOPLE.every((person) => Array.isArray(saved.lists[person.id]))) return saved;
+    if (saved?.lists && PEOPLE.every((person) => Array.isArray(saved.lists[person.id]))) {
+      saved.itineraryNotes ||= {};
+      saved.itinerary ||= null;
+      return saved;
+    }
   } catch (error) {
     console.warn("Could not load saved checklist", error);
   }
@@ -70,6 +77,7 @@ let applyingRemoteState = false;
 let saveTimer;
 let authInstance = null;
 let unsubscribeCloud = null;
+let currentView = "checklist";
 
 const els = {
   tabs: document.querySelector("#people-tabs"),
@@ -97,6 +105,10 @@ const els = {
   accountPhoto: document.querySelector("#account-photo"),
   accountName: document.querySelector("#account-name"),
   accountEmail: document.querySelector("#account-email"),
+  checklistView: document.querySelector("#checklist-view"),
+  scheduleView: document.querySelector("#schedule-view"),
+  scheduleGrid: document.querySelector("#schedule-grid"),
+  tripContacts: document.querySelector("#trip-contacts"),
 };
 
 function saveState({ sync = true } = {}) {
@@ -116,8 +128,10 @@ async function pushStateToCloud() {
   try {
     await setDoc(cloudDocument, {
       lists: state.lists,
+      itineraryJson: state.itinerary ? JSON.stringify(state.itinerary) : null,
+      itineraryNotes: state.itineraryNotes || {},
       updatedAt: new Date().toISOString(),
-      schemaVersion: 1,
+      schemaVersion: 2,
     });
     setSyncStatus("online");
   } catch (error) {
@@ -193,16 +207,30 @@ function startCloudListener() {
   let firstSnapshot = true;
   unsubscribeCloud = onSnapshot(cloudDocument, async (snapshot) => {
       if (snapshot.exists() && snapshot.data()?.lists) {
+        const focusedNote = document.activeElement?.matches?.(".day-note")
+          ? { dayId: document.activeElement.dataset.dayId, value: document.activeElement.value }
+          : null;
         applyingRemoteState = true;
         state.lists = snapshot.data().lists;
+        state.itinerary = parseItinerary(snapshot.data().itineraryJson);
+        state.itineraryNotes = snapshot.data().itineraryNotes || {};
+        if (focusedNote) state.itineraryNotes[focusedNote.dayId] = focusedNote.value;
         saveState({ sync: false });
         applyingRemoteState = false;
-        render();
+        if (focusedNote) {
+          renderTabs();
+          renderActiveList();
+          renderProgress();
+        } else {
+          render();
+        }
       } else if (firstSnapshot) {
         await setDoc(cloudDocument, {
           lists: state.lists,
+          itineraryJson: state.itinerary ? JSON.stringify(state.itinerary) : null,
+          itineraryNotes: state.itineraryNotes || {},
           updatedAt: new Date().toISOString(),
-          schemaVersion: 1,
+          schemaVersion: 2,
         });
       }
       firstSnapshot = false;
@@ -211,6 +239,18 @@ function startCloudListener() {
     }, (error) => {
       console.error("Realtime listener failed", error);
       cloudReady = false;
+      if (error?.code === "permission-denied") {
+        state.itinerary = null;
+        state.itineraryNotes = {};
+        saveState({ sync: false });
+        render();
+        els.authScreen.hidden = false;
+        els.accountRow.hidden = true;
+        showAuthError("חשבון Google הזה אינו מורשה להיכנס לאפליקציה.");
+        setSyncStatus("signedout");
+        signOut(authInstance).catch(() => {});
+        return;
+      }
       setSyncStatus(navigator.onLine ? "error" : "offline");
     });
 }
@@ -266,6 +306,106 @@ function render() {
   renderTabs();
   renderActiveList();
   renderProgress();
+  renderView();
+}
+
+function renderView() {
+  const showingSchedule = currentView === "schedule";
+  els.checklistView.hidden = showingSchedule;
+  els.scheduleView.hidden = !showingSchedule;
+  if (showingSchedule) renderSchedule();
+}
+
+function showSchedule() {
+  currentView = "schedule";
+  els.menuDialog.close();
+  renderView();
+  window.scrollTo({ top: document.querySelector("main").offsetTop - 18, behavior: "smooth" });
+}
+
+function showChecklist() {
+  currentView = "checklist";
+  renderView();
+  window.scrollTo({ top: document.querySelector("main").offsetTop - 18, behavior: "smooth" });
+}
+
+function renderSchedule() {
+  els.scheduleGrid.replaceChildren();
+  els.tripContacts.replaceChildren();
+  const itinerary = state.itinerary;
+  if (!itinerary?.days?.length) {
+    els.scheduleGrid.innerHTML = '<div class="schedule-empty"><strong>הלו״ז עדיין לא זמין</strong><span>ממתינים לסנכרון הנתונים המאובטחים.</span></div>';
+    return;
+  }
+  const contactCards = [
+    ["מספר הזמנה", itinerary.reservationNumber],
+    [`מרכז ההזמנות · ${itinerary.bookingCenter?.hours || ""}`, itinerary.bookingCenter],
+    [`קו חירום להזמנה · ${itinerary.emergency?.hours || ""}`, itinerary.emergency],
+  ];
+  contactCards.forEach(([title, value]) => {
+    const block = document.createElement("div");
+    block.innerHTML = `<strong>${escapeHtml(title)}</strong>`;
+    if (typeof value === "string") {
+      const span = document.createElement("span");
+      span.textContent = value;
+      block.append(span);
+    } else if (value) {
+      (value.phones || []).forEach((phone) => {
+        const link = document.createElement("a");
+        link.href = `tel:${phoneHref(phone)}`;
+        link.textContent = phone;
+        block.append(link);
+      });
+      if (value.email) {
+        const link = document.createElement("a");
+        link.href = `mailto:${value.email}`;
+        link.textContent = value.email;
+        block.append(link);
+      }
+    }
+    els.tripContacts.append(block);
+  });
+  itinerary.days.forEach((day) => {
+    const card = document.createElement("article");
+    card.className = "day-card";
+    card.innerHTML = `
+      <header class="day-card__header">
+        <div><span class="day-card__day">${escapeHtml(day.day)}</span><span class="day-card__date">${escapeHtml(day.date)}</span></div>
+        <h3>${escapeHtml(day.title)}</h3>
+        <p>${escapeHtml(day.summary)}</p>
+        <div class="day-stats">${day.stats.map((stat) => `<span>${escapeHtml(stat)}</span>`).join("")}</div>
+      </header>
+      <div class="day-card__body">
+        <section class="day-info"><h4>איך נערכים</h4><ul>${day.prepare.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>
+        <section class="day-info"><h4>מה עושים</h4><ul>${day.tasks.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul></section>
+        ${day.stay ? `<section class="day-info"><h4>לינה</h4><strong>${escapeHtml(day.stay.name)}</strong><p>${escapeHtml(day.stay.address)}</p><div class="day-links"><a href="tel:${phoneHref(day.stay.phone)}">${escapeHtml(day.stay.phone)}</a><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${day.stay.name}, ${day.stay.address}`)}" target="_blank" rel="noopener">פתיחה במפה</a></div></section>` : ""}
+        <section class="day-info"><h4>אנשי קשר</h4>${day.contacts.map((contact) => `<div class="contact-row"><div><strong>${escapeHtml(contact.name)}</strong><small>${escapeHtml(contact.role)}</small></div><a href="tel:${phoneHref(contact.phone)}">${escapeHtml(contact.phone)}</a></div>`).join("")}</section>
+        <label class="day-notes"><span>הערות שלנו</span><textarea class="day-note" data-day-id="${day.id}" rows="3" placeholder="מה חשוב לזכור ביום הזה?"></textarea><small>ההערה משותפת ומסתנכרנת בין הטלפונים.</small></label>
+      </div>`;
+    const textarea = card.querySelector(".day-note");
+    textarea.value = state.itineraryNotes?.[day.id] || "";
+    textarea.addEventListener("input", () => {
+      state.itineraryNotes ||= {};
+      state.itineraryNotes[day.id] = textarea.value;
+      saveState({ sync: false });
+    });
+    textarea.addEventListener("change", () => saveState());
+    els.scheduleGrid.append(card);
+  });
+}
+
+function phoneHref(phone) {
+  return phone.replace(/[^+\d]/g, "");
+}
+
+function parseItinerary(value) {
+  if (!value) return null;
+  try {
+    return typeof value === "string" ? JSON.parse(value) : value;
+  } catch (error) {
+    console.error("Could not parse itinerary", error);
+    return null;
+  }
 }
 
 function renderTabs() {
@@ -335,6 +475,7 @@ function createItemRow(categoryId, item, isShared) {
     </label>
     <span class="item__name"></span>
     ${isShared ? ownerSelectMarkup(item.owner) : "<span></span>"}
+    <button class="item__edit" type="button" aria-label="עריכת פריט" title="עריכה">✎</button>
     <button class="item__delete" type="button" aria-label="מחיקת פריט">×</button>`;
   row.querySelector(".item__name").textContent = item.name;
   row.querySelector("input").addEventListener("change", (event) => {
@@ -349,6 +490,7 @@ function createItemRow(categoryId, item, isShared) {
     render();
     showToast("הפריט הוסר");
   });
+  row.querySelector(".item__edit").addEventListener("click", () => editItem(item));
   const ownerSelect = row.querySelector(".item__owner");
   if (ownerSelect) {
     ownerSelect.addEventListener("change", (event) => {
@@ -357,6 +499,16 @@ function createItemRow(categoryId, item, isShared) {
     });
   }
   return row;
+}
+
+function editItem(item) {
+  const editedName = window.prompt("עריכת שם הפריט", item.name);
+  const name = editedName?.trim();
+  if (!name || name === item.name) return;
+  item.name = name;
+  saveState();
+  render();
+  showToast("הפריט עודכן");
 }
 
 function ownerSelectMarkup(value = "") {
@@ -515,6 +667,8 @@ document.querySelector("#toggle-copy-all").addEventListener("click", () => {
   updateCopyCount();
 });
 document.querySelector("#open-menu").addEventListener("click", () => els.menuDialog.showModal());
+document.querySelector("#open-schedule").addEventListener("click", showSchedule);
+document.querySelector("#back-to-checklist").addEventListener("click", showChecklist);
 document.querySelector("#export-data").addEventListener("click", exportData);
 document.querySelector("#import-data").addEventListener("change", (event) => {
   if (event.target.files[0]) importData(event.target.files[0]);
