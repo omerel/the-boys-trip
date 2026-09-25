@@ -112,19 +112,22 @@ const els = {
   countdownDays: document.querySelector("#countdown-days"),
   countdownHours: document.querySelector("#countdown-hours"),
   countdownMinutes: document.querySelector("#countdown-minutes"),
+  countdownSeconds: document.querySelector("#countdown-seconds"),
 };
 
 const DEPARTURE_TIME = new Date("2026-10-07T09:00:00+03:00");
 
 function updateFlightCountdown() {
   const remaining = Math.max(0, DEPARTURE_TIME.getTime() - Date.now());
-  const totalMinutes = Math.floor(remaining / 60000);
-  const days = Math.floor(totalMinutes / (60 * 24));
-  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-  const minutes = totalMinutes % 60;
+  const totalSeconds = Math.floor(remaining / 1000);
+  const days = Math.floor(totalSeconds / (60 * 60 * 24));
+  const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
+  const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+  const seconds = totalSeconds % 60;
   els.countdownDays.textContent = String(days);
   els.countdownHours.textContent = String(hours).padStart(2, "0");
   els.countdownMinutes.textContent = String(minutes).padStart(2, "0");
+  els.countdownSeconds.textContent = String(seconds).padStart(2, "0");
 }
 
 function saveState({ sync = true } = {}) {
@@ -706,5 +709,5 @@ window.addEventListener("online", () => {
 
 render();
 updateFlightCountdown();
-setInterval(updateFlightCountdown, 30000);
+setInterval(updateFlightCountdown, 1000);
 connectCloudSync();
