@@ -44,7 +44,21 @@
           </div>
         </div>
         <h1>הטיול של הבנים</h1>
-        <p>7–13 באוקטובר 2026 · 85.8 ק״מ באלפים היוליאניים</p>
+        <div class="trip-launcher">
+          <button class="schedule-cta" id="hero-open-schedule" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg>
+            <span><strong>ללו״ז היומי</strong><small>כל המסלולים, ההסעות והלינות</small></span>
+            <span class="schedule-cta__arrow" aria-hidden="true">←</span>
+          </button>
+          <div class="flight-countdown" aria-label="ספירה לאחור לטיסה">
+            <span class="flight-countdown__label">✈ ההמראה בעוד</span>
+            <div class="countdown-units">
+              <span><strong id="countdown-days">--</strong><small>ימים</small></span>
+              <span><strong id="countdown-hours">--</strong><small>שעות</small></span>
+              <span><strong id="countdown-minutes">--</strong><small>דקות</small></span>
+            </div>
+          </div>
+        </div>
         <div class="overall-progress" aria-label="התקדמות כללית">
           <div class="overall-progress__copy">
             <span>מוכנים לדרך</span>

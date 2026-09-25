@@ -109,7 +109,23 @@ const els = {
   scheduleView: document.querySelector("#schedule-view"),
   scheduleGrid: document.querySelector("#schedule-grid"),
   tripContacts: document.querySelector("#trip-contacts"),
+  countdownDays: document.querySelector("#countdown-days"),
+  countdownHours: document.querySelector("#countdown-hours"),
+  countdownMinutes: document.querySelector("#countdown-minutes"),
 };
+
+const DEPARTURE_TIME = new Date("2026-10-07T09:00:00+03:00");
+
+function updateFlightCountdown() {
+  const remaining = Math.max(0, DEPARTURE_TIME.getTime() - Date.now());
+  const totalMinutes = Math.floor(remaining / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+  els.countdownDays.textContent = String(days);
+  els.countdownHours.textContent = String(hours).padStart(2, "0");
+  els.countdownMinutes.textContent = String(minutes).padStart(2, "0");
+}
 
 function saveState({ sync = true } = {}) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -668,6 +684,7 @@ document.querySelector("#toggle-copy-all").addEventListener("click", () => {
 });
 document.querySelector("#open-menu").addEventListener("click", () => els.menuDialog.showModal());
 document.querySelector("#open-schedule").addEventListener("click", showSchedule);
+document.querySelector("#hero-open-schedule").addEventListener("click", showSchedule);
 document.querySelector("#back-to-checklist").addEventListener("click", showChecklist);
 document.querySelector("#export-data").addEventListener("click", exportData);
 document.querySelector("#import-data").addEventListener("change", (event) => {
@@ -688,4 +705,6 @@ window.addEventListener("online", () => {
 });
 
 render();
+updateFlightCountdown();
+setInterval(updateFlightCountdown, 30000);
 connectCloudSync();
